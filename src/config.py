@@ -11,9 +11,9 @@ SHEETS = {
 }
 
 CUM_CONST = {
-    'cash_dau_ky':'CF_47',
-    'cash_cuoi_ky':'CF_48',
-    'notes_max': [f'NOTES_{i}' for i in range(1, 120)]
+    'cash_dau_ky':'CF_56',
+    'cash_cuoi_ky':'CF_58',
+    'notes_max': [f'NOTES_{i}' for i in range(1, 155)]
 }
 
 TOPNHNN = 'AGRB,BID,CTG,VCB'.split(',')
