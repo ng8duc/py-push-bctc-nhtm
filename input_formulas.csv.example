@@ -1,0 +1,43 @@
+﻿Chỉ tiêu,Công thức tính,Tên sheet,to_d1
+Vốn CSH,BS_58,BCTC_NHTM_VCSH,1
+Tỷ lệ Vốn CSH/TTS,BS_58/BS_1,BCTC_NHTM_VCSH%TTS,1
+Vốn điều lệ,BS_60,BCTC_NHTM_VĐL,1
+TTS,BS_1,BCTC_NHTM_TTS,1
+Dư nợ,BS_13,BCTC_NHTM_DN,1
+Huy động vốn,BS_48 + BS_51,BCTC_NHTM_HDV,1
+Tiền gửi,BS_48,BCTC_NHTM_TGKH,1
+Quy mô nợ xấu,NOTES_28 + NOTES_29 + NOTES_30,BCTC_NHTM_NPL,1
+Tỷ lệ nợ xấu,(NOTES_28 + NOTES_29 + NOTES_30)/BS_13,BCTC_NHTM_%NPL,1
+Quy mô nợ nhóm 2,NOTES_27,BCTC_NHTM_NN2,1
+Tỷ lệ nợ nhóm 2,NOTES_27/BS_13,BCTC_NHTM_%NN2,1
+Tỷ lệ bao phủ nợ xấu,abs(NOTES_77)/(NOTES_28 + NOTES_29 + NOTES_30),BCTC_NHTM_LLR,1
+Tỷ lệ CIR,abs(IS_15)/IS_14,BCTC_NHTM_CIR,1
+Chênh lệch thu chi,IS_16,BCTC_NHTM_CLTC,1
+Lợi nhuận trước thuế,IS_18,BCTC_NHTM_LNTT,1
+ROA,IS_22/avg_BS_1/quarter*4,BCTC_NHTM_ROA,1
+ROE,IS_22/avg_BS_58/quarter*4,BCTC_NHTM_ROE,1
+NIM,IS_3/(avg_BS_3+avg_BS_5+avg_BS_6+avg_BS_13+avg_BS_16)/quarter*4,BCTC_NHTM_NIM,1
+Chênh lệch lãi suất đầu ra - đầu vào,IS_1/(avg_BS_3+avg_BS_5+avg_BS_6+avg_BS_13+avg_BS_16)/quarter*4 - abs(IS_2)/(avg_BS_44+avg_BS_45+avg_BS_48+avg_BS_51)/quarter*4,BCTC_NHTM_CLLS,1
+Lãi suất đầu ra,IS_1/(avg_BS_3+avg_BS_5+avg_BS_6+avg_BS_13+avg_BS_16)/quarter*4,BCTC_NHTM_LSDR,1
+Lãi suất đầu vào,abs(IS_2)/(avg_BS_44+avg_BS_45+avg_BS_48+avg_BS_51)/quarter*4,BCTC_NHTM_LSDV,1
+Tỷ lệ Dư nợ/Huy động,BS_13/(BS_48 + BS_51),BCTC_NHTM_DN%HĐV,1
+Tỷ trọng dư nợ TDH,(NOTES_34 + NOTES_35)/NOTES_32,BCTC_NHTM_%DNTDH,1
+Tỷ trọng tiền gửi KKH,NOTES_103/NOTES_102,BCTC_NHTM_%CASA,1
+Thu lãi ròng,IS_3 - abs(IS_17),BCTC_NHTM_TLR,1
+Thu phi lãi ròng,IS_14 - IS_3,BCTC_NHTM_ThuphiLR,1
+Thu dịch vụ ròng,IS_6,BCTC_NHTM_TDVR,1
+Thu ròng từ CK kinh doanh,IS_8,BCTC_NHTM_TRCKKD,1
+Thu ròng từ CK đầu tư,IS_9,BCTC_NHTM_TRCKĐT,1
+Thu ròng từ vốn góp cổ phần,IS_13,BCTC_NHTM_TRGV,1
+Thu ròng từ KD ngoại hối,IS_7,BCTC_NHTM_TRKDNH,1
+Thu ròng từ HĐ khác,IS_12,BCTC_NHTM_TRHĐ#,1
+Tỷ trọng thu lãi ròng,(IS_3 - abs(IS_17))/(IS_14 - abs(IS_17)),BCTC_NHTM_%TLR,1
+Tỷ trọng thu phi lãi ròng,1 - (IS_3 - abs(IS_17))/(IS_14 - abs(IS_17)),BCTC_NHTM_%ThuphiLR,1
+Tỷ trọng thu DVR,IS_6/IS_14,BCTC_NHTM_%TDVR,1
+Tỷ trọng Thu ròng từ CK kinh doanh,IS_8/IS_14,BCTC_NHTM_%TRCKKD,1
+Tỷ trọng Thu ròng từ CK đầu tư,IS_9/IS_14,BCTC_NHTM_%TRCKĐT,1
+Tỷ trọng Thu ròng từ vốn góp cổ phần,IS_13/IS_14,BCTC_NHTM_%TRGV,1
+Tỷ trọng Thu ròng từ KD ngoại hối,IS_7/IS_14,BCTC_NHTM_%TRKDNH,1
+Tỷ trọng Thu ròng từ HĐ khác,IS_12/IS_14,BCTC_NHTM_%TRHĐ#,1
+Tỷ lệ chi phí DPRR/Thu nhập,abs(IS_17)/IS_14,BCTC_NHTM_%CPDPRR,1
+Chi phí DPRR,abs(IS_17),BCTC_NHTM_CPDPRR,1
