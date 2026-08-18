@@ -106,6 +106,8 @@ def read_multiple_file(folder:str , company_name:str, freq:Literal['quarterly', 
 
     frames.append(df)
 
+    sheet_order = {key: i for i, key in enumerate(SHEETS.keys())}
+
     data = pl.concat(frames)
     data_rieng_le = (data.filter(pl.col('loai_bao_cao') == 'Riêng lẻ'))
     rieng_le_entries = data_rieng_le['period'].unique().to_list()
@@ -116,5 +118,11 @@ def read_multiple_file(folder:str , company_name:str, freq:Literal['quarterly', 
            .sort('ngay_xuat_du_lieu', descending=True)
            .unique(subset=['rowid', 'chi_tieu', 'cong_ty', 'period'], keep = 'first', maintain_order = True)
            .drop('ngay_xuat_du_lieu')
-           .pivot(index = ['rowid', 'chi_tieu', 'cong_ty'], on = 'period', values = 'value', maintain_order = True, sort_columns = True)
+           .with_columns(
+                           pl.col('rowid').str.extract(r'^([A-Z]+)_', 1).replace_strict(sheet_order).alias('_sheet_order'),
+                           pl.col('rowid').str.extract(r'_(\d+)$', 1).cast(pl.Int64).alias('_num'),
+                       )
+            .sort('_sheet_order', '_num')
+            .drop('_sheet_order', '_num')
+            .pivot(index = ['rowid', 'chi_tieu', 'cong_ty'], on = 'period', values = 'value', maintain_order = True, sort_columns = True)
            )
