@@ -3,6 +3,7 @@ import polars as pl
 import polars.selectors as cs
 import fastexcel
 from .janitorvn import *
+from .data_readers import load_sheet
 from pathlib import Path
 import re
 
@@ -14,13 +15,13 @@ def _read_file_structure(file_path: str, company_name: str) -> pl.DataFrame:
 
     frames = []
     for key, sheet in SHEETS.items():
-        sheet_name = f'{sheet} - {company_name}'
+        sheet_name = f'{sheet}'
 
-        df = (reader
-              .load_sheet(sheet_name, header_row=8)
-              .to_polars()
+        df = (load_sheet(reader, sheet_name)
               .clean_names_vn()
-              .filter(pl.col('don_vi').is_not_null())
+              .rename({'chi_tieuty_vnd': 'chi_tieu'})
+              .with_columns(pl.col('chi_tieu').str.strip_chars())
+              .filter(~pl.col('chi_tieu').str.contains('kiểm toán'))
               .select('chi_tieu')
               .with_row_index('rowid', offset=1)
               .with_columns(

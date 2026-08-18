@@ -33,7 +33,7 @@ def _extract_consolidate_type(reader: fastexcel.ExcelReader, sheet_name: str) ->
 # fastexcel's header_row cho kết quả lệch dòng khi có các dòng trống xen giữa
 # (như row 2 và row 5 ở trên), nên phải tự dựng header từ dữ liệu thô thay vì
 # dùng tham số header_row.
-def _load_sheet(reader: fastexcel.ExcelReader, sheet_name: str, header_row_idx: int = 6) -> pl.DataFrame:
+def load_sheet(reader: fastexcel.ExcelReader, sheet_name: str, header_row_idx: int = 6) -> pl.DataFrame:
     raw = reader.load_sheet(sheet_name, header_row=None).to_polars()
     headers = raw.row(header_row_idx)
     new_names = [h if isinstance(h, str) and h else f'__UNNAMED__{i}' for i, h in enumerate(headers)]
@@ -62,7 +62,7 @@ def _read_file_data(file_path:str, company_name:str, freq:Literal['quarterly', '
     for key, sheet in SHEETS.items():
         sheet_name = f'{sheet}'
 
-        df = (_load_sheet(reader, sheet_name)
+        df = (load_sheet(reader, sheet_name)
               .clean_names_vn()
               .rename({'chi_tieuty_vnd':'chi_tieu'})
               .with_columns(pl.col('chi_tieu').str.strip_chars())
@@ -118,6 +118,3 @@ def read_multiple_file(folder:str , company_name:str, freq:Literal['quarterly', 
            .drop('ngay_xuat_du_lieu')
            .pivot(index = ['rowid', 'chi_tieu', 'cong_ty'], on = 'period', values = 'value', maintain_order = True, sort_columns = True)
            )
-
-if __name__ == '__main__':
-    print(read_multiple_file(folder='D:/project incubator/r to python/push-bctc/data/data-quarterly', company_name='ABB'))
