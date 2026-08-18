@@ -21,7 +21,7 @@ df = pl.concat(frames, how='diagonal_relaxed')
 
 columns = df.columns
 
-date_cols = [c for c in columns if re.match('(\d{4})_q(\d)', c)]
+date_cols = [c for c in columns if re.match(r'(\d{4})_q(\d)', c)]
 date_cols.sort()
 
 df = (df
