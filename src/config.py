@@ -4,8 +4,8 @@ DATA_DIR = here("data")
 SRC_DIR = here("src")
 
 SHEETS = {
-    'BS':'Cân đối kế toán',
-    'IS':'Báo cáo thu nhập',
+    'BS':'Bảng cân đối kế toán',
+    'IS':'Kết quả kinh doanh',
     'CF':'Lưu chuyển tiền tệ',
     'NOTES':'Thuyết minh'
 }
