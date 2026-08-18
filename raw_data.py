@@ -2,6 +2,8 @@ from src.data_readers import read_multiple_file
 from pyprojroot.here import here
 from src.config import *
 import polars as pl
+import polars.selectors as cs
+import re
 
 frames = []
 
@@ -16,5 +18,13 @@ for company in TOPNH:
         frames.append(df_q)
 
 df = pl.concat(frames, how='diagonal_relaxed')
+
+columns = df.columns
+
+date_cols = [c for c in columns if re.match('(\d{4})_q(\d)', c)]
+date_cols.sort()
+
+df = (df
+      .select('rowid', 'chi_tieu', 'cong_ty', cs.by_name(date_cols)))
 
 df.write_excel('raw_data.xlsx')
