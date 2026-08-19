@@ -9,15 +9,14 @@ lên Cloudflare D1.
   `src/config.py`:
   - `TOPNHNN` — 4 ngân hàng gốc nhà nước (Agribank, BIDV, VietinBank, Vietcombank).
   - `TOPNHTM` — 7 ngân hàng TMCP tư nhân lớn (VPB, SHB, VIB, MBB, ACB, HDB, TCB).
-  - `TOPNH` — toàn bộ ngân hàng niêm yết đang theo dõi (28 mã); không phải hợp của
-    hai nhóm trên mà là danh sách độc lập, dùng để tính tổng/trung bình toàn ngành.
+  - `TOPNH` — toàn bộ ngân hàng đang theo dõi, dùng để tính tổng/trung bình toàn ngành.
 - Tính dữ liệu lũy kế từ dữ liệu quý (`gen_cumulative_data`), xử lý khác nhau theo
   loại chỉ tiêu — dựa vào `CUM_CONST` trong `src/config.py`:
   - Chỉ tiêu bảng cân đối (`rowid` bắt đầu bằng `BS`) và thuyết minh
     (`CUM_CONST['notes_max']`) là số dư tại một thời điểm, nên lấy giá trị của quý
-    **cuối cùng** trong năm, không cộng dồn.
-  - Tiền và tương đương tiền đầu kỳ (`CUM_CONST['cash_dau_ky']`) lấy giá trị quý
-    **đầu tiên**, cuối kỳ (`CUM_CONST['cash_cuoi_ky']`) lấy quý **cuối cùng**.
+    **gần nhất** (parameter `quarter` của `gen_cumulative_data`), không cộng dồn.
+  - Tiền và tương đương tiền đầu kỳ (`CUM_CONST['cash_dau_ky']`) lấy giá trị
+    **quý 1**, cuối kỳ (`CUM_CONST['cash_cuoi_ky']`) lấy quý **gần nhất**.
   - Các chỉ tiêu còn lại (dạng flows — thu nhập, dòng tiền trên IS/CF) được
     **cộng dồn (sum)** qua các quý trong năm.
   - Nếu `CUM_CONST` khai sai rowid, các dòng thuyết minh/tiền mặt sẽ bị cộng dồn
