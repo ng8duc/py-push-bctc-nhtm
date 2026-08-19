@@ -36,6 +36,7 @@ def _read_file_data(file_path:str, company_name:str, freq:Literal['quarterly', '
               .to_polars()
               .clean_names_vn()
               .filter(pl.col('don_vi').is_not_null())
+              .with_columns(pl.col('chi_tieu').str.strip_chars())
               .with_columns(cs.exclude('don_vi', 'chi_tieu').cast(pl.Float64, strict=False))
               .with_row_index('rowid', offset = 1)
               .with_columns(
