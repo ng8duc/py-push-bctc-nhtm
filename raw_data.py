@@ -27,4 +27,4 @@ date_cols.sort()
 df = (df
       .select('rowid', 'chi_tieu', 'cong_ty', cs.by_name(date_cols)))
 
-df.write_excel('raw_data.xlsx')
+df.write_excel('raw_data.xlsx', column_formats = {cs.numeric():'General'})
