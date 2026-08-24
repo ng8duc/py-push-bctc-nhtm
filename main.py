@@ -126,7 +126,7 @@ if errors:
     for col_name, err in errors.items():
         print(f'  - {col_name}: {err}')
 
-workbook = xlsxwriter.Workbook('output.xlsx')
+workbook = xlsxwriter.Workbook('output.xlsx', {'nan_inf_to_errors': True})
 for sheet, df in to_excel.items():
     df.write_excel(workbook=workbook, worksheet=sheet)
 workbook.close()
