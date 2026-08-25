@@ -128,7 +128,7 @@ if errors:
 
 workbook = xlsxwriter.Workbook('output.xlsx', {'nan_inf_to_errors': True})
 for sheet, df in to_excel.items():
-    df.filter(pl.col('yq').str.extract(r'(\d{4})_q(\d)', 2).is_in(['2', '4'])).write_excel(workbook=workbook, worksheet=sheet)
+    df.filter(pl.col('yq').str.extract(r'(\d{4})_q(\d)', 2).is_in(['2', '4'])).write_excel(workbook=workbook, worksheet=sheet, column_formats = {cs.numeric():'General'})
 workbook.close()
 
 d1_errors = {}
