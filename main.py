@@ -43,7 +43,7 @@ for company in TOPNH:
         frames.append(df_cum)
 
     if not df_q.is_empty():
-        for year in range(2020,2027):
+        for year in range(2015,2027):
             for quarter in range(3): # Luôn để range = 3 vì chỉ lấy 3 quý đầu năm
                 try:
                     df1 = gen_cumulative_data(df_q, year=year, quarter=quarter+1)
