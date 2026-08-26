@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -6,6 +7,8 @@ import tempfile
 
 import polars as pl
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 
 def _escape_sql_literal(value) -> str:
@@ -83,9 +86,16 @@ def _table_exists(database: str, table: str, env: dict) -> bool:
 def push_dataframe_to_d1(df: pl.DataFrame, table: str, *, batch_size: int = 200) -> None:
     load_dotenv()
 
-    account_id = os.environ['CLOUDFLARE_ACCOUNT_ID']
-    api_token = os.environ['CLOUDFLARE_API_TOKEN']
-    database = os.environ['D1_DATABASE']
+    account_id = os.environ.get('CLOUDFLARE_ACCOUNT_ID', '')
+    api_token = os.environ.get('CLOUDFLARE_API_TOKEN', '')
+    database = os.environ.get('D1_DATABASE', '')
+
+    if not account_id or not api_token or not database:
+        logger.warning(
+            'Bỏ qua đẩy bảng "%s" lên D1: thiếu CLOUDFLARE_ACCOUNT_ID/CLOUDFLARE_API_TOKEN/D1_DATABASE trong .env',
+            table,
+        )
+        return
 
     if df.is_empty():
         return
@@ -95,6 +105,8 @@ def push_dataframe_to_d1(df: pl.DataFrame, table: str, *, batch_size: int = 200)
     env = os.environ.copy()
     env['CLOUDFLARE_ACCOUNT_ID'] = account_id
     env['CLOUDFLARE_API_TOKEN'] = api_token
+
+    logger.info('Đang đẩy bảng "%s" lên D1 (%d dòng)...', table, df.height)
 
     statements = []
     if _table_exists(database, table, env):
@@ -110,3 +122,5 @@ def push_dataframe_to_d1(df: pl.DataFrame, table: str, *, batch_size: int = 200)
         _run_wrangler([database, '--remote', '--file', sql_path], env=env)
     finally:
         os.remove(sql_path)
+
+    logger.info('Đã đẩy xong bảng "%s" lên D1.', table)
