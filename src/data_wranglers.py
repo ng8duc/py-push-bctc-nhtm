@@ -98,19 +98,31 @@ def gen_average_columns(df:pl.DataFrame, agg:bool = True) -> pl.DataFrame:
     # qidx: số thứ tự quý liên tiếp = year*4 + quarter (mỗi năm có 4 quý), ví dụ 2023_q4 = 8096, 2024_q1 = 8097
     # Hai quý kề nhau luôn cách nhau đúng 1 đơn vị, kể cả khi qua năm
     # Dùng để sort đúng thứ tự cho cum_sum, và làm khóa cho cửa sổ '5i' của roll5_ (5 quý theo lịch, không phải 5 dòng)
+    # Ngân hàng trong SEMI_ANNUAL (vd AGRB) chỉ có Q2 và Q4 nên số điểm kỳ vọng ít hơn:
+    # - n_pts: số điểm trong năm cần có (Q2 -> 1, Q4 -> 2, thay vì quarter); avg_ chia cho n_pts + 1
+    # - roll5_ chỉ cần 3 điểm trong cửa sổ 5 quý (Q2-Q4-Q2 hoặc Q4-Q2-Q4)
+    # - Dòng Q1, Q3 của các ngân hàng này (nếu có) cho kết quả null
+    is_semi = pl.col('cong_ty').is_in(SEMI_ANNUAL)
+    n_pts = pl.when(is_semi).then(pl.col('quarter') // 2).otherwise(pl.col('quarter'))
+    valid_q = ~is_semi | (pl.col('quarter') % 2 == 0)
+
     df_agg_true = (df
           .with_columns((pl.col('year') * 4 + pl.col('quarter')).alias('qidx'))
           .sort(by=['cong_ty', 'qidx'])
           .join(df_q4, on=['cong_ty', 'year_prev'], how='left')
           .with_columns(
               [pl.when(
-                  (pl.col(c).is_not_null().cum_sum().over('cong_ty', 'year') == pl.col('quarter'))
+                  valid_q
+                  & (pl.col(c).is_not_null().cum_sum().over('cong_ty', 'year') == n_pts)
                   & pl.col(f'{c}_q4').is_not_null()
               ).then(
-                  (pl.col(c).cum_sum().over('cong_ty', 'year') + pl.col(f'{c}_q4')) / (pl.col('quarter') + 1)
+                  (pl.col(c).cum_sum().over('cong_ty', 'year') + pl.col(f'{c}_q4')) / (n_pts + 1)
               ).alias(f'avg_{c}') for c in cols]
-              + [pl.col(c).rolling_mean_by('qidx', window_size='5i', closed='right', min_samples=5)
-                 .over('cong_ty').alias(f'roll5_{c}') for c in cols]
+              + [pl.when(is_semi & valid_q).then(
+                     pl.col(c).rolling_mean_by('qidx', window_size='5i', closed='right', min_samples=3).over('cong_ty')
+                 ).when(~is_semi).then(
+                     pl.col(c).rolling_mean_by('qidx', window_size='5i', closed='right', min_samples=5).over('cong_ty')
+                 ).alias(f'roll5_{c}') for c in cols]
           ).drop(
               [f'{c}_q4' for c in cols] + ['year_prev', 'year', 'qidx']
           ))
