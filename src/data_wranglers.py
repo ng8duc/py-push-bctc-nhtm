@@ -92,18 +92,33 @@ def gen_average_columns(df:pl.DataFrame, agg:bool = True) -> pl.DataFrame:
              ).rename({c:f'{c}_q4' for c in cols})
              .select('cong_ty', 'year_prev', cs.contains('_q4')))
 
+    # avg_: trung bình từ Q4 năm trước đến quý hiện tại, (Q4 năm trước + Q1..Qq)/(q+1)
+    # Trả null nếu thiếu Q4 năm trước hoặc thiếu bất kỳ quý nào trong năm
+    # roll5_: trung bình 5 điểm Qt-4..Qt, trả null nếu thiếu điểm nào trong cửa sổ
+    # qidx: số thứ tự quý liên tiếp = year*4 + quarter (mỗi năm có 4 quý), ví dụ 2023_q4 = 8096, 2024_q1 = 8097
+    # Hai quý kề nhau luôn cách nhau đúng 1 đơn vị, kể cả khi qua năm
+    # Dùng để sort đúng thứ tự cho cum_sum, và làm khóa cho cửa sổ '5i' của roll5_ (5 quý theo lịch, không phải 5 dòng)
     df_agg_true = (df
+          .with_columns((pl.col('year') * 4 + pl.col('quarter')).alias('qidx'))
+          .sort(by=['cong_ty', 'qidx'])
           .join(df_q4, on=['cong_ty', 'year_prev'], how='left')
           .with_columns(
-              [((pl.col(c) + pl.col(f'{c}_q4'))/2).alias(f'avg_{c}') for c in cols]
+              [pl.when(
+                  (pl.col(c).is_not_null().cum_sum().over('cong_ty', 'year') == pl.col('quarter'))
+                  & pl.col(f'{c}_q4').is_not_null()
+              ).then(
+                  (pl.col(c).cum_sum().over('cong_ty', 'year') + pl.col(f'{c}_q4')) / (pl.col('quarter') + 1)
+              ).alias(f'avg_{c}') for c in cols]
+              + [pl.col(c).rolling_mean_by('qidx', window_size='5i', closed='right', min_samples=5)
+                 .over('cong_ty').alias(f'roll5_{c}') for c in cols]
           ).drop(
-              [f'{c}_q4' for c in cols] + ['year_prev', 'year']
+              [f'{c}_q4' for c in cols] + ['year_prev', 'year', 'qidx']
           ))
 
     df_agg_false = (df
                     .sort(by='yq')
                     .with_columns(
-                        [((pl.col(c)+pl.col(c).shift(1))/2).alias(f'avg_{c}') for c in cols]
+                        [((pl.col(c)+pl.col(c).shift(1).over('cong_ty'))/2).alias(f'avg_{c}') for c in cols]
                     ).drop(['year', 'year_prev']))
 
     if agg == True:
