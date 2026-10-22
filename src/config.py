@@ -16,6 +16,9 @@ CUM_CONST = {
     'notes_max': [f'NOTES_{i}' for i in range(1, 155)]
 }
 
+# Các ngân hàng chỉ có dữ liệu Q2 (cộng dồn 6 tháng) và Q4, thiếu Q1 và Q3
+SEMI_ANNUAL = ['AGRB']
+
 TOPNHNN = 'AGRB,BID,CTG,VCB'.split(',')
 TOPNHTM = 'VPB,SHB,VIB,MBB,ACB,HDB,TCB'.split(',')
 TOPNH = 'AGRB,BID,CTG,VPB,VCB,SHB,STB,VIB,LPB,MBB,ACB,HDB,EIB,SSB,MSB,ABB,TPB,OCB,NAB,BVB,TCB,VAB,VBB,PGB,BAB,NVB,KLB,SGB'.split(',')
