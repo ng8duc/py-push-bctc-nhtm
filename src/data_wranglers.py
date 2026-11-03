@@ -140,6 +140,57 @@ def gen_average_columns(df:pl.DataFrame, agg:bool = True) -> pl.DataFrame:
         return(df_agg_false)
 
 
+# Hàm này tính giá trị rolling 4 quý (TTM) cho các chỉ tiêu IS, phải chạy SAU gen_cumulative_data
+# Vì IS trong df đã là số lũy kế (YTD: Q2 = 6T, Q3 = 9T, Q4 = cả năm) nên không cộng trực tiếp 4 quý được
+# Công thức chung cho mọi ngân hàng: roll4 = YTD(kỳ hiện tại) + FY(năm trước) - YTD(cùng kỳ năm trước)
+# - Kỳ hiện tại là Q4: roll4 = YTD(Q4) (số cả năm)
+# - Ngân hàng thường, Q3: Q4 năm trước + Q1 + Q2 + Q3 (rời rạc)
+# - Ngân hàng trong SEMI_ANNUAL, Q2: Q4 năm trước - Q2 năm trước + Q2 năm nay; Q1, Q3 trả null
+# - Thiếu dữ liệu năm trước thì trả null
+def gen_rolling_columns(df: pl.DataFrame) -> pl.DataFrame:
+
+    cols = df.select(cs.starts_with('IS_')).columns
+
+    df = df.with_columns(
+        pl.col('yq').str.extract(r'(\d{4})_q(\d)', 1).cast(pl.Int32).alias('_year'),
+        pl.col('yq').str.extract(r'(\d{4})_q(\d)', 2).cast(pl.Int32).alias('_quarter')
+    )
+
+    # FY năm trước: dòng Q4, đẩy khóa năm lên 1 để join vào năm hiện tại
+    df_fy = (df
+             .filter(pl.col('_quarter') == 4)
+             .select(
+                 'cong_ty',
+                 (pl.col('_year') + 1).alias('_year'),
+                 *[pl.col(c).alias(f'{c}_fy') for c in cols]
+             ))
+
+    # YTD cùng kỳ năm trước
+    df_py = (df
+             .select(
+                 'cong_ty',
+                 (pl.col('_year') + 1).alias('_year'),
+                 '_quarter',
+                 *[pl.col(c).alias(f'{c}_py') for c in cols]
+             ))
+
+    is_semi = pl.col('cong_ty').is_in(SEMI_ANNUAL)
+    valid_q = ~is_semi | (pl.col('_quarter') % 2 == 0)
+
+    return (df
+            .join(df_fy, on=['cong_ty', '_year'], how='left')
+            .join(df_py, on=['cong_ty', '_year', '_quarter'], how='left')
+            .with_columns([
+                pl.when(~valid_q).then(None)
+                .when(pl.col('_quarter') == 4).then(pl.col(c))
+                .when(pl.col(c).is_not_null() & pl.col(f'{c}_fy').is_not_null() & pl.col(f'{c}_py').is_not_null())
+                .then(pl.col(c) + pl.col(f'{c}_fy') - pl.col(f'{c}_py'))
+                .cast(pl.Float64)
+                .alias(f'roll4_{c}') for c in cols
+            ])
+            .drop([f'{c}_fy' for c in cols] + [f'{c}_py' for c in cols] + ['_year', '_quarter']))
+
+
 # Hàm này tính các chỉ tiêu thứ cấp theo công thức đã định sẵn, nạp vào từ 1 file csv
 # Các cột của hàm này phải được pivot rồi
 def gen_data_by_formula(df: pl.DataFrame, formula: str, agg:bool = True, col_name: str = 'new_col') -> pl.DataFrame:
