@@ -70,7 +70,7 @@ for company in TOPNH:
 # Đây là bảng full
 df2 = pl.concat(frames, how='diagonal_relaxed').unique()
 df3 = summarize_by_group(df2)
-df4 = gen_average_columns(df3)
+df4 = gen_rolling_columns(gen_average_columns(df3))
 
 
 
